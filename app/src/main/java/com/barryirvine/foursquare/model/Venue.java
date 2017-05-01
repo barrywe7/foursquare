@@ -5,5 +5,5 @@ public class Venue {
     private String id;
     private String name;
     private String url;
-    private String mobileUrl;
+    private FourSquareLocation location;
 }
