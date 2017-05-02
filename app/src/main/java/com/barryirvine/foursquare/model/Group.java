@@ -6,4 +6,8 @@ public class Group {
     private String type;
     private String name;
     private List<Item> items;
+
+    public List<Item> getItems() {
+        return items;
+    }
 }

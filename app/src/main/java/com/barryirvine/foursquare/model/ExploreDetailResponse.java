@@ -6,4 +6,8 @@ public class ExploreDetailResponse {
 
     List<Group> groups;
 
+    public List<Item> getItems() {
+        return groups.get(0).getItems();
+    }
+
 }

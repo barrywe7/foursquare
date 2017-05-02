@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 
 import com.barryirvine.foursquare.R;
 import com.barryirvine.foursquare.model.Venue;
+import com.barryirvine.foursquare.ui.activity.RecommendedVenuesActivity;
 
 
 /**
@@ -51,6 +52,6 @@ public class VenueViewModel extends BaseObservable {
 
 
     public void onClick() {
-        //TODO
+        RecommendedVenuesActivity.start(mContext, mVenue.getLocation().getLat(), mVenue.getLocation().getLng());
     }
 }

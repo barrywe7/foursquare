@@ -11,24 +11,24 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.barryirvine.foursquare.R;
-import com.barryirvine.foursquare.model.Venue;
-import com.barryirvine.foursquare.ui.adapter.VenueAdapter;
+import com.barryirvine.foursquare.model.Item;
+import com.barryirvine.foursquare.ui.adapter.GroupAdapter;
 
 import java.util.ArrayList;
 
-public class VenueFragment extends Fragment {
+public class GroupFragment extends Fragment {
 
     private RecyclerView mRecyclerView;
-    private VenueAdapter mAdapter;
-    private ArrayList<Venue> mVenues;
+    private GroupAdapter mAdapter;
+    private ArrayList<Item> mItems;
 
-    public VenueFragment() {
+    public GroupFragment() {
     }
 
-    public static VenueFragment newInstance(@NonNull final ArrayList<Venue> venues) {
-        final VenueFragment fragment = new VenueFragment();
+    public static GroupFragment newInstance(@NonNull final ArrayList<Item> items) {
+        final GroupFragment fragment = new GroupFragment();
         final Bundle args = new Bundle();
-        args.putParcelableArrayList(Args.VENUES, venues);
+        args.putParcelableArrayList(Args.ITEMS, items);
         fragment.setArguments(args);
         return fragment;
     }
@@ -36,7 +36,7 @@ public class VenueFragment extends Fragment {
     @Override
     public void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mVenues = getArguments().getParcelableArrayList(Args.VENUES);
+        mItems = getArguments().getParcelableArrayList(Args.ITEMS);
     }
 
     @Override
@@ -49,13 +49,13 @@ public class VenueFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         if (savedInstanceState == null) {
-            mAdapter = new VenueAdapter(mVenues);
+            mAdapter = new GroupAdapter(mItems);
             mRecyclerView.setAdapter(mAdapter);
         }
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
     }
 
     private static class Args {
-        private static final String VENUES = "VENUES";
+        private static final String ITEMS = "ITEMS";
     }
 }

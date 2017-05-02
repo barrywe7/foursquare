@@ -22,7 +22,6 @@ import com.barryirvine.foursquare.BuildConfig;
 import com.barryirvine.foursquare.R;
 import com.barryirvine.foursquare.api.FourSquareService;
 import com.barryirvine.foursquare.api.FoursquareAPI;
-import com.barryirvine.foursquare.model.ExploreResponse;
 import com.barryirvine.foursquare.model.SearchResponse;
 import com.barryirvine.foursquare.ui.fragment.VenueFragment;
 import com.barryirvine.foursquare.utils.RuntimePermissionUtils;
@@ -158,18 +157,12 @@ public class MainActivity extends AppCompatActivity implements
     public void onConnected(@Nullable final Bundle bundle) {
         if (LocationServices.FusedLocationApi.getLastLocation(mLocationClient) != null) {
             mLocation = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
-            if (RuntimePermissionUtils.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) { // && getSupportFragmentManager().findFragmentById(R.id.fragment_layout) == null) {
-                getRecommended();
-            }
         } else {
             LocationServices.FusedLocationApi.requestLocationUpdates(mLocationClient, mLocationRequest, new LocationListener() {
                 @Override
                 public void onLocationChanged(final Location location) {
                     LocationServices.FusedLocationApi.removeLocationUpdates(mLocationClient, this);
                     mLocation = location;
-                    if (RuntimePermissionUtils.hasPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION))  {// && getSupportFragmentManager().findFragmentById(R.id.fragment_layout) == null) {
-                        getRecommended();
-                    }
                 }
             });
         }
@@ -206,30 +199,6 @@ public class MainActivity extends AppCompatActivity implements
                                 Toast.makeText(MainActivity.this, "Failure", Toast.LENGTH_LONG).show();
                             }
                         });
-    }
-
-    private void getRecommended() {
-        FourSquareService.get().recommended(FoursquareAPI.VERSION,
-                "51.567780042666996,0.010843923594280032",
-                BuildConfig.FOUR_SQUARE_CLIENT_ID,
-                BuildConfig.FOUR_SQUARE_SECRET)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        new Consumer<ExploreResponse>() {
-                            @Override
-                            public void accept(final ExploreResponse response) throws Exception {
-                                Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_LONG).show();
-                            }
-                        },
-                        new Consumer<Throwable>() {
-                            @Override
-                            public void accept(final Throwable throwable) throws Exception {
-                                Toast.makeText(MainActivity.this, "Failure", Toast.LENGTH_LONG).show();
-                            }
-                        });
-
-
     }
 
     @Override
