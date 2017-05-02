@@ -19,6 +19,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    dataBinding {
+        enabled = true
+    }
 }
 
 ext {
@@ -33,7 +36,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile "com.google.android.gms:play-services-location:$playServicesVersion"
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
     compile "com.android.support:design:$supportLibraryVersion"
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'

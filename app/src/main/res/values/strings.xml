@@ -6,4 +6,7 @@
     <string name="missing_location_permission_title">Where you at?!</string>
     <string name="missing_location_permission_body">To use location-based features, go to settings and allow SimilarPlaces permission to use your location.</string>
     <string name="missing_location_rationale_body">This app needs your location in order to work out where you are</string>
+    <string name="no_location">I don\'t know where you are. Please check that location is enabled on your device and for this app</string>
+    <string name="f_distance_km" formatted="false">"%1$.1fkm"</string>
+
 </resources>

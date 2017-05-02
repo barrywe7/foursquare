@@ -5,15 +5,16 @@ import android.content.DialogInterface;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.barryirvine.foursquare.api.FourSquareService;
 import com.barryirvine.foursquare.api.FoursquareAPI;
 import com.barryirvine.foursquare.model.ExploreResponse;
 import com.barryirvine.foursquare.model.SearchResponse;
+import com.barryirvine.foursquare.ui.fragment.VenueFragment;
 import com.barryirvine.foursquare.utils.RuntimePermissionUtils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -36,34 +38,42 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
-        GoogleApiClient.ConnectionCallbacks, ResultCallback<LocationSettingsResult>{
+        GoogleApiClient.ConnectionCallbacks, ResultCallback<LocationSettingsResult>, SearchView.OnQueryTextListener {
 
     private static final int REQUEST_LOCATION_SETTING = 1234;
     private Location mLocation;
     private GoogleApiClient mLocationClient;
     private LocationRequest mLocationRequest;
+    private SearchView mSearchView;
+    private CoordinatorLayout mCoordinatorLayout;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        mSearchView = (SearchView) findViewById(R.id.search_view);
+        mCoordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
+        mSearchView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(final View v) {
+                mSearchView.onActionViewExpanded();
             }
         });
+        mSearchView.setOnQueryTextListener(this);
+        handleLocationPermission();
+    }
+
+    private void handleLocationPermission() {
         RuntimePermissionUtils.checkForPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 new RuntimePermissionUtils.CheckPermissionListener() {
@@ -87,43 +97,6 @@ public class MainActivity extends AppCompatActivity implements
                         RuntimePermissionUtils.requestPermissionFromActivity(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION, RuntimePermissionUtils.REQUEST_LOCATION);
                     }
                 });
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (RuntimePermissionUtils.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            connectLocationClient();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        disconnectLocationClient();
-        super.onStop();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -212,10 +185,10 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void getVenues() {
+    private void getVenues(final String query) {
         FourSquareService.get().findVenues(FoursquareAPI.VERSION,
                 String.valueOf(mLocation.getLatitude()) + "," + String.valueOf(mLocation.getLongitude()),
-                "The+Red+Lion",
+                query,
                 BuildConfig.FOUR_SQUARE_CLIENT_ID,
                 BuildConfig.FOUR_SQUARE_SECRET)
                 .subscribeOn(Schedulers.newThread())
@@ -224,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements
                         new Consumer<SearchResponse>() {
                             @Override
                             public void accept(final SearchResponse response) throws Exception {
-                                Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_LONG).show();
+                                addFragment(R.id.fragment_layout, VenueFragment.newInstance(response.getVenues()));
                             }
                         },
                         new Consumer<Throwable>() {
@@ -257,5 +230,28 @@ public class MainActivity extends AppCompatActivity implements
                         });
 
 
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(final String query) {
+        if (mLocation == null) {
+            Snackbar.make(mCoordinatorLayout, R.string.no_location, Snackbar.LENGTH_LONG).show();
+        } else {
+            try {
+                getVenues(URLEncoder.encode(query, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(final String newText) {
+        return false;
+    }
+
+    public void addFragment(@IdRes final int containerViewId, final Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(containerViewId, fragment, fragment.getClass().getSimpleName()).commitNow();
     }
 }

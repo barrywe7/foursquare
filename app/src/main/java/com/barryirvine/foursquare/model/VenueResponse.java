@@ -2,6 +2,10 @@ package com.barryirvine.foursquare.model;
 
 import java.util.List;
 
-public class VenueResponse {
+class VenueResponse {
     private List<Venue> venues;
+
+    List<Venue> getVenues() {
+        return venues;
+    }
 }
